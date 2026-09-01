@@ -12,7 +12,7 @@ This personal MCP server exposes one write tool, `send_weekly_digest`, which pos
 
 ## Deploy to Vercel
 
-1. Import this directory into a private Git repository and create a Vercel project.
+1. Import this directory into a Git repository (public or private) and connect it to a Vercel project.
 2. Generate a secret locally, for example: `openssl rand -hex 32`.
 3. In Vercel project settings, add these Production environment variables:
    - `LINE_CHANNEL_ACCESS_TOKEN`
@@ -22,7 +22,7 @@ This personal MCP server exposes one write tool, `send_weekly_digest`, which pos
 5. In LINE Developers, set the webhook URL to `https://YOUR-PROJECT.vercel.app/api/line/webhook` and enable webhooks.
 6. Invite the LINE Official Account to the target group and send one ordinary message in that group.
 7. Read the Vercel runtime log entry named `LINE_GROUP_DISCOVERED`, copy its `groupId`, add it to Vercel as `LINE_GROUP_ID`, and redeploy.
-8. Update `.mcp.json` with the real URL: `https://YOUR-PROJECT.vercel.app/api/mcp/YOUR-MCP-CAPABILITY-SECRET`.
+8. Copy `.mcp.example.json` to `.mcp.json`, then replace the placeholder URL in the local `.mcp.json` with `https://YOUR-PROJECT.vercel.app/api/mcp/YOUR-MCP-CAPABILITY-SECRET`. The local `.mcp.json` is ignored by Git.
 9. Add that HTTPS MCP URL as a custom ChatGPT app/plugin and test `send_weekly_digest` with a short test message.
 
 Never paste LINE credentials or the capability URL into a normal chat message or commit them to source control.
