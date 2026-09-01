@@ -1,0 +1,18 @@
+{
+  "name": "line-weekly-digest",
+  "version": "0.1.0",
+  "description": "Send the weekly NPB and MLB digest to one fixed LINE group.",
+  "author": {
+    "name": "Personal plugin"
+  },
+  "interface": {
+    "displayName": "LINE Weekly Digest",
+    "shortDescription": "Post a baseball digest to one LINE group.",
+    "longDescription": "A narrowly scoped personal plugin that sends the prepared NPB and MLB weekly digest to a single LINE group configured on the server.",
+    "developerName": "Personal plugin",
+    "category": "Productivity",
+    "capabilities": ["tools"],
+    "defaultPrompt": "Send the completed weekly baseball digest to my configured LINE group."
+  },
+  "mcpServers": "./.mcp.json"
+}

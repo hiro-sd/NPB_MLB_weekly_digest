@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "line-weekly-digest": {
+      "url": "https://YOUR-PROJECT.vercel.app/api/mcp/YOUR-MCP-CAPABILITY-SECRET"
+    }
+  }
+}
