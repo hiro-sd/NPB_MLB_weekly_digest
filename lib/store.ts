@@ -10,8 +10,8 @@ export type Store = {
 };
 
 export function redisStore(fetchImpl: typeof fetch = fetch): Store {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const url = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) throw new Error("Upstash Redis is not configured.");
   return {
     async command<T>(...args: Array<string | number>): Promise<T> {

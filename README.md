@@ -11,7 +11,7 @@ ChatGPTからMCPツール `send_weekly_digest` に完成した週報を1回渡�
 
 ## Vercel・LINEの設定
 
-1. Vercelの対象プロジェクト `line-weekly-digest` に、Upstash Redisの**無料**データベースを接続します。Marketplace連携により設定される `UPSTASH_REDIS_REST_URL` と `UPSTASH_REDIS_REST_TOKEN` をProduction環境で確認します。
+1. Vercelの対象プロジェクト `line-weekly-digest` に、Upstash Redisの**無料**データベースを接続します。このプロジェクトのMarketplace連携が設定する `KV_REST_API_URL` と `KV_REST_API_TOKEN` をProduction環境で確認します。
 2. 既存の `LINE_CHANNEL_ACCESS_TOKEN`、`LINE_CHANNEL_SECRET`、`MCP_CAPABILITY_SECRET` を維持してデプロイします。`MCP_CAPABILITY_SECRET` は32文字以上の高エントロピー値にしてください。`/api/health` で各設定の有無を確認できます。値自体は返しません。
 3. LINE DevelopersのMessaging API設定で「グループトーク・複数人トークへの参加を許可」とWebhookを有効にし、Webhook URLを `https://YOUR-PROJECT.vercel.app/api/line/webhook` に設定します。Webhook署名は受信した生の本文で検証します。
 4. 既存の固定配信先 `LINE_GROUP_ID` は移行中そのまま使えます。このグループを登録先へ移す場合は、いったん公式アカウントをグループから削除して再招待し、登録返信を確認した後に `LINE_GROUP_ID` を削除します。グループから削除された場合は旧設定が残っていても配信対象に戻りません。

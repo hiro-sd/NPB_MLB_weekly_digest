@@ -9,14 +9,14 @@ test("signed group join registers; leave removes; ordinary messages do nothing",
   const saved = {
     secret: process.env.LINE_CHANNEL_SECRET,
     token: process.env.LINE_CHANNEL_ACCESS_TOKEN,
-    url: process.env.UPSTASH_REDIS_REST_URL,
-    redisToken: process.env.UPSTASH_REDIS_REST_TOKEN,
+    url: process.env.KV_REST_API_URL,
+    redisToken: process.env.KV_REST_API_TOKEN,
     legacy: process.env.LINE_GROUP_ID,
   };
   process.env.LINE_CHANNEL_SECRET = "test-secret";
   process.env.LINE_CHANNEL_ACCESS_TOKEN = "test-token";
-  process.env.UPSTASH_REDIS_REST_URL = "https://redis.example.test";
-  process.env.UPSTASH_REDIS_REST_TOKEN = "redis-token";
+  process.env.KV_REST_API_URL = "https://redis.example.test";
+  process.env.KV_REST_API_TOKEN = "redis-token";
   delete process.env.LINE_GROUP_ID;
 
   const commands: unknown[][] = [];
@@ -59,8 +59,8 @@ test("signed group join registers; leave removes; ordinary messages do nothing",
     for (const [key, value] of Object.entries({
       LINE_CHANNEL_SECRET: saved.secret,
       LINE_CHANNEL_ACCESS_TOKEN: saved.token,
-      UPSTASH_REDIS_REST_URL: saved.url,
-      UPSTASH_REDIS_REST_TOKEN: saved.redisToken,
+      KV_REST_API_URL: saved.url,
+      KV_REST_API_TOKEN: saved.redisToken,
       LINE_GROUP_ID: saved.legacy,
     })) {
       if (value === undefined) delete process.env[key];
