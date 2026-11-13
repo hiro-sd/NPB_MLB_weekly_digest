@@ -1,36 +1,36 @@
-# LINE Weekly Digest
+# NPB・MLB週間ダイジェストのLINEグループ配信
 
-This personal MCP server exposes one write tool, `send_weekly_digest`, which posts a finalized NPB/MLB digest to one server-configured LINE group. The tool cannot choose another recipient and never accepts a LINE token as input.
+ChatGPTからMCPツール `send_weekly_digest` に完成した週報を1回渡すと、登録済みのLINEグループに同じ内容を配信します。グループへの招待で自動登録、グループからの削除で配信停止します。通常の会話は保存しません。
 
-## Security model
+## 無料運用の上限
 
-- `LINE_CHANNEL_ACCESS_TOKEN`, `LINE_CHANNEL_SECRET`, and `LINE_GROUP_ID` exist only as hosting environment variables.
-- The MCP endpoint is protected by a high-entropy capability URL stored as `MCP_CAPABILITY_SECRET` (minimum 32 characters).
-- The LINE destination is fixed server-side.
-- A deterministic `X-Line-Retry-Key` reduces duplicate posts if the same edition is retried.
-- This capability-URL design is appropriate for a single-user personal deployment. Use OAuth instead for shared or multi-user deployments.
+- 配信処理は、LINE公式アカウントの当月利用通数とプラン上限を確認し、**月200通**を超える見込みの送信を止めます。グループ宛ての1回のプッシュは、本文を最大5個のメッセージに分割しても、グループ内の**ユーザー人数**分として計算されます。
+- 5週ある月も想定し、登録時は既存グループと合わせて**40人以下**を目安に受け付けます。定員を超えたグループには参加イベントへの返信で知らせ、公式アカウントが退出します。
+- メンバー増加、LINE公式アカウント管理画面からの別配信、LINE側の利用通数の概算・反映遅延があるため、毎週全グループへの配信を保証するものではありません。上限で止まったグループはMCPの結果に `quotaSkipped` として表示されます。LINEの無料プランも維持してください。
+- 保存先はUpstash Redisの無料プランを想定します。利用量が無料枠内にあるか、UpstashとVercelのダッシュボードでも確認してください。
 
-## Deploy to Vercel
+## Vercel・LINEの設定
 
-1. Import this directory into a Git repository (public or private) and connect it to a Vercel project.
-2. Generate a secret locally, for example: `openssl rand -hex 32`.
-3. In Vercel project settings, add these Production environment variables:
-   - `LINE_CHANNEL_ACCESS_TOKEN`
-   - `LINE_CHANNEL_SECRET`
-   - `MCP_CAPABILITY_SECRET`
-4. Deploy. Confirm `/api/health` reports the first, second, and fourth settings as `true`.
-5. In LINE Developers, set the webhook URL to `https://YOUR-PROJECT.vercel.app/api/line/webhook` and enable webhooks.
-6. Invite the LINE Official Account to the target group and send one ordinary message in that group.
-7. Read the Vercel runtime log entry named `LINE_GROUP_DISCOVERED`, copy its `groupId`, add it to Vercel as `LINE_GROUP_ID`, and redeploy.
-8. Copy `.mcp.example.json` to `.mcp.json`, then replace the placeholder URL in the local `.mcp.json` with `https://YOUR-PROJECT.vercel.app/api/mcp/YOUR-MCP-CAPABILITY-SECRET`. The local `.mcp.json` is ignored by Git.
-9. Add that HTTPS MCP URL as a custom ChatGPT app/plugin and test `send_weekly_digest` with a short test message.
+1. Vercelの対象プロジェクト `line-weekly-digest` に、Upstash Redisの**無料**データベースを接続します。Marketplace連携により設定される `UPSTASH_REDIS_REST_URL` と `UPSTASH_REDIS_REST_TOKEN` をProduction環境で確認します。
+2. 既存の `LINE_CHANNEL_ACCESS_TOKEN`、`LINE_CHANNEL_SECRET`、`MCP_CAPABILITY_SECRET` を維持してデプロイします。`MCP_CAPABILITY_SECRET` は32文字以上の高エントロピー値にしてください。`/api/health` で各設定の有無を確認できます。値自体は返しません。
+3. LINE DevelopersのMessaging API設定で「グループトーク・複数人トークへの参加を許可」とWebhookを有効にし、Webhook URLを `https://YOUR-PROJECT.vercel.app/api/line/webhook` に設定します。Webhook署名は受信した生の本文で検証します。
+4. 既存の固定配信先 `LINE_GROUP_ID` は移行中そのまま使えます。このグループを登録先へ移す場合は、いったん公式アカウントをグループから削除して再招待し、登録返信を確認した後に `LINE_GROUP_ID` を削除します。グループから削除された場合は旧設定が残っていても配信対象に戻りません。
+5. LINE公式アカウント管理画面の「友だち追加」から、友だち追加リンクまたはQRコードを取得して公開します。利用者は公式アカウントを友だち追加し、配信を受けたいグループへ招待します。グループ参加時の返信で登録結果が分かります。
 
-Never paste LINE credentials or the capability URL into a normal chat message or commit them to source control.
+LINE公式アカウントをすでに別の公式アカウントがいるグループへ招待することはできません。古い複数人トークの `roomId` はこの実装の登録対象外です。
 
-## Local checks
+## 週報の配信と再試行
+
+これまでと同じMCP URL `https://YOUR-PROJECT.vercel.app/api/mcp/YOUR-MCP-CAPABILITY-SECRET` をChatGPTに設定し、完成した週報を `digestId`（例: `2026-W46`）と `text` で送ります。スケジュール側は**週報を1回作って、このツールを1回呼ぶ**設定のままで構いません。
+
+送信結果には配信成功、送信済み、処理中、月間上限で保留、失敗したグループ数が含まれます。失敗したグループだけを再試行するには、**同じ `digestId` と同じ `text`** でツールを再実行します。同じIDを異なる本文に使うと拒否します。送信履歴はRedisに保存し、LINEの宛先別再送キーも使います。
+
+MCPのURLは実質的な管理権限です。公開するのはLINEの友だち追加リンク・QRコードだけにし、MCP URLや各シークレットをチャット本文・リポジトリに載せないでください。
+
+## ローカル確認
 
 ```sh
-npm install
+npm ci
 npm test
 npm run typecheck
 npm run build
